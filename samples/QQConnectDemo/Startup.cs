@@ -42,7 +42,7 @@ namespace QQConnectDemo
                 microsoftOptions.ClientId = Configuration["Authentication:Microsoft:ApplicationId"];
                 microsoftOptions.ClientSecret = Configuration["Authentication:Microsoft:Password"];
             });
-            services.AddAuthentication().AddQQConnect(qqconnectOptions =>
+            services.AddAuthentication().AddQQ(qqconnectOptions =>
             {
                 qqconnectOptions.AppId = Configuration["Authentication:QQ:AppId"];
                 qqconnectOptions.AppKey = Configuration["Authentication:QQ:AppKey"];
