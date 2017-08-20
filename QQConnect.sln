@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.QQConnect", "src\Microsoft.AspNetCore.Authentication.QQConnect\Microsoft.AspNetCore.Authentication.QQConnect.csproj", "{A0F4B888-D92C-414D-85F8-3474DBD94841}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C565C133-90BC-4F14-AFD0-B29EA08FAA9D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{ADEB547A-52FB-4BB7-8FB9-1B425A506592}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QQConnectDemo", "samples\QQConnectDemo\QQConnectDemo.csproj", "{15FBFF59-4E30-44FC-93DC-06A3C0D6EE9B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A0F4B888-D92C-414D-85F8-3474DBD94841}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0F4B888-D92C-414D-85F8-3474DBD94841}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0F4B888-D92C-414D-85F8-3474DBD94841}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0F4B888-D92C-414D-85F8-3474DBD94841}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15FBFF59-4E30-44FC-93DC-06A3C0D6EE9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15FBFF59-4E30-44FC-93DC-06A3C0D6EE9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15FBFF59-4E30-44FC-93DC-06A3C0D6EE9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15FBFF59-4E30-44FC-93DC-06A3C0D6EE9B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A0F4B888-D92C-414D-85F8-3474DBD94841} = {ADEB547A-52FB-4BB7-8FB9-1B425A506592}
+		{15FBFF59-4E30-44FC-93DC-06A3C0D6EE9B} = {C565C133-90BC-4F14-AFD0-B29EA08FAA9D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DAF83380-001D-42BD-8C90-3FE1F826C6C5}
+	EndGlobalSection
+EndGlobal

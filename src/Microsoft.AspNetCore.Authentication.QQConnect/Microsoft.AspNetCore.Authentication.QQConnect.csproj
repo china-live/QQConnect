@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>LDMING</Authors>
+    <Company />
+    <Product />
+    <Description>ASP.NET核心的中间件，使应用程序支持QQ认证登录。</Description>
+    <PackageProjectUrl>https://github.com/china-live/QQConnect/tree/master</PackageProjectUrl>
+    <PackageTags>QQConnect,QQLogin,security, aspnet core, authentication</PackageTags>
+    <PackageLicenseUrl>https://github.com/china-live/QQConnect/blob/master/LICENSE</PackageLicenseUrl>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="2.0.0" />
+  </ItemGroup>
+
+</Project>
