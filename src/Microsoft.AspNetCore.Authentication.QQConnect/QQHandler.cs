@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authentication.QQConnect
 {
-    internal class QQConnectHandler : OAuthHandler<QQConnectOptions>
+    internal class QQHandler : OAuthHandler<QQConnectOptions>
     {
-        public QQConnectHandler(IOptionsMonitor<QQConnectOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        public QQHandler(IOptionsMonitor<QQConnectOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
@@ -30,10 +30,8 @@ namespace Microsoft.AspNetCore.Authentication.QQConnect
             {
                 throw new HttpRequestException($"未能检索QQ Connect的OpenId(返回状态码:{openIdResponse.StatusCode})，请检查access_token是正确。");
             }
-            var tmp = await openIdResponse.Content.ReadAsStringAsync();
-            var json = JObject.Parse(企鹅的返回不拘一格传入这里转换为JSON(tmp));
-            var openId = QQHelper.GetOpenId(json);
-            //identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, openId, ClaimValueTypes.String, Options.ClaimsIssuer));
+            var json = JObject.Parse(企鹅的返回不拘一格传入这里转换为JSON(await openIdResponse.Content.ReadAsStringAsync()));
+            var openId = GetOpenId(json);
 
             //获取用户信息
             var parameters = new Dictionary<string, string>
@@ -50,6 +48,7 @@ namespace Microsoft.AspNetCore.Authentication.QQConnect
             }
 
             var payload = JObject.Parse(await userInformationResponse.Content.ReadAsStringAsync());
+            //identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, openId, ClaimValueTypes.String, Options.ClaimsIssuer));
             payload.Add("openid", openId);
             var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload);
             context.RunClaimActions();
@@ -102,6 +101,10 @@ namespace Microsoft.AspNetCore.Authentication.QQConnect
         private static string 企鹅的返回不拘一格传入这里转换为JSON(string text)
         {
             return new System.Text.RegularExpressions.Regex("callback\\((?<json>[ -~]+)\\);").Match(text).Groups["json"].Value;
+        }
+
+        private static string GetOpenId(JObject json) {
+            return json.Value<string>("openid");
         }
     }
 }

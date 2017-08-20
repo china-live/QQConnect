@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.QQConnect\Microsoft.AspNetCore.Authentication.QQConnect.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.QQConnect\Microsoft.AspNetCore.Authentication.QQ.csproj" />
   </ItemGroup>
 
 </Project>

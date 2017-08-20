@@ -1,11 +1,11 @@
 ﻿namespace Microsoft.AspNetCore.Authentication.QQConnect
 {
     //http://wiki.connect.qq.com/%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C_oauth2-0 QQ互联 oauth2.0文档
-    public static class QQConnectDefaults
+    public static class QQDefaults
     {
-        public const string AuthenticationScheme = "QQConnect";
+        public const string AuthenticationScheme = "QQ";
 
-        public static readonly string DisplayName = "QQConnect";
+        public static readonly string DisplayName = "QQ";
 
         /// <summary>
         /// 获取Authorization Code

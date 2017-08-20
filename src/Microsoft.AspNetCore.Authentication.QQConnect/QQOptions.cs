@@ -9,10 +9,10 @@ namespace Microsoft.AspNetCore.Authentication.QQConnect
         public QQConnectOptions()
         {
             CallbackPath = new PathString("/signin-qq");
-            AuthorizationEndpoint = QQConnectDefaults.AuthorizationEndpoint;
-            TokenEndpoint = QQConnectDefaults.TokenEndpoint;
-            UserInformationEndpoint = QQConnectDefaults.UserInformationEndpoint;
-            OpenIdEndpoint = QQConnectDefaults.OpenIdEndpoint;
+            AuthorizationEndpoint = QQDefaults.AuthorizationEndpoint;
+            TokenEndpoint = QQDefaults.TokenEndpoint;
+            UserInformationEndpoint = QQDefaults.UserInformationEndpoint;
+            OpenIdEndpoint = QQDefaults.OpenIdEndpoint;
 
             //StateDataFormat = 
             //Scope 表示用户授权时向用户显示的可进行授权的列表。
