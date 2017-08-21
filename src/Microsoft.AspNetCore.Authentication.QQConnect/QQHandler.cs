@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Authentication.QQ
             {
                 throw new HttpRequestException($"未能检索QQ Connect的OpenId(返回状态码:{openIdResponse.StatusCode})，请检查access_token是正确。");
             }
-            var json = JObject.Parse(企鹅的返回不拘一格传入这里转换为JSON(await openIdResponse.Content.ReadAsStringAsync()));
+            var json = JObject.Parse(企鹅的返回不拘一格传入这里统一转换为JSON(await openIdResponse.Content.ReadAsStringAsync()));
             var openId = GetOpenId(json);
 
             //获取用户信息
@@ -76,31 +76,41 @@ namespace Microsoft.AspNetCore.Authentication.QQ
             var response = await Backchannel.GetAsync(endpoint, Context.RequestAborted);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadAsStringAsync();
-                result = "{\"" + result.Replace("=", "\":\"").Replace("&", "\",\"") + "\"}";
-                var payload = JObject.Parse(result);
+                var payload = JObject.Parse(企鹅的返回不拘一格传入这里统一转换为JSON(await response.Content.ReadAsStringAsync()));
                 return OAuthTokenResponse.Success(payload);
             }
-            //else if (response.StatusCode == System.Net.HttpStatusCode.Found || response.StatusCode == System.Net.HttpStatusCode.MovedPermanently)
-            //{
-            //QQ Connect接口调用有错误时，会返回code和msg字段，以url参数对的形式返回，value部分会进行url编码（UTF-8)。
-            //http://wiki.connect.qq.com/%E4%BD%BF%E7%94%A8authorization_code%E8%8E%B7%E5%8F%96access_token
-            //如果这样的话，那应该是发生了301或302重定向操作
-            //要取得出错的具体错误提示代码，只能在重定向后的Url中截取
-            //    var newUrl = response.Headers.Location;
-
-            //    var error = "OAuth token endpoint failure: ";// + await Display(response);
-            //    return OAuthTokenResponse.Failed(new Exception(error));
-            //}
             else
             {
                 return OAuthTokenResponse.Failed(new Exception("获取QQ Connect Access Token出错。"));
             }
         }
 
-        private static string 企鹅的返回不拘一格传入这里转换为JSON(string text)
+        //Convert to JSON
+        private static string 企鹅的返回不拘一格传入这里统一转换为JSON(string text)
         {
-            return new System.Text.RegularExpressions.Regex("callback\\((?<json>[ -~]+)\\);").Match(text).Groups["json"].Value;
+            /*
+             * 为什么有个 callback() 包裹; 
+             * 个人猜测这是一个用于跨域调用的JSONP的回调函数，名称并不是固定的，只是默认为callback,用jquery.ajax请求时就可以设置这个回调函数名
+             * 当然，这也只是猜测，QQ互联文档上也没有明确说明
+             * 但是，可以肯定的是，我们是在服务端发出的请求，没有主动设置，返回的一定是 callback(json) 格式。
+            */
+
+            //通过Access Token，成功取得对应用户身份OpenID时的数据返回格式
+            //详情请访问QQ互联api文档 http://wiki.connect.qq.com/%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7openid_oauth2-0
+            var openIdRegex = new System.Text.RegularExpressions.Regex("callback\\((?<json>[ -~]+)\\);");
+            if (openIdRegex.IsMatch(text))
+            {
+                return openIdRegex.Match(text).Groups["json"].Value;
+            }
+
+            //获取Access Token成功后的返回数据格式,详情请参见QQ互联api文档“Step2：通过Authorization Code获取Access Token ”章节
+            //http://wiki.connect.qq.com/%E4%BD%BF%E7%94%A8authorization_code%E8%8E%B7%E5%8F%96access_token
+            var tokenRegex = new System.Text.RegularExpressions.Regex("^access_token=.{1,}&expires_in=.{1,}&refresh_token=.{1,}");
+            if (tokenRegex.IsMatch(text))
+            {
+                return "{\"" + text.Replace("=", "\":\"").Replace("&", "\",\"") + "\"}";
+            }
+            return "{}";
         }
 
         private static string GetOpenId(JObject json) {
