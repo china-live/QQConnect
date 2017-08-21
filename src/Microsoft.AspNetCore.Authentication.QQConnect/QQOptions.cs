@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
-namespace Microsoft.AspNetCore.Authentication.QQConnect
+namespace Microsoft.AspNetCore.Authentication.QQ
 {
-    public class QQConnectOptions : OAuthOptions
+    public class QQOptions : OAuthOptions
     {
-        public QQConnectOptions()
+        public QQOptions()
         {
             CallbackPath = new PathString("/signin-qq");
             AuthorizationEndpoint = QQDefaults.AuthorizationEndpoint;

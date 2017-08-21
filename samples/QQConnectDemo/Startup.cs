@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using QQConnectDemo.Data;
 using QQConnectDemo.Models;
 using QQConnectDemo.Services;
-using Microsoft.AspNetCore.Authentication.QQConnect;
+using Microsoft.AspNetCore.Authentication.QQ;
 
 namespace QQConnectDemo
 {
@@ -41,11 +41,14 @@ namespace QQConnectDemo
             {
                 microsoftOptions.ClientId = Configuration["Authentication:Microsoft:ApplicationId"];
                 microsoftOptions.ClientSecret = Configuration["Authentication:Microsoft:Password"];
-            });
-            services.AddAuthentication().AddQQ(qqconnectOptions =>
+            }).AddGoogle(googleOptions =>
             {
-                qqconnectOptions.AppId = Configuration["Authentication:QQ:AppId"];
-                qqconnectOptions.AppKey = Configuration["Authentication:QQ:AppKey"];
+                googleOptions.ClientId = Configuration["Authentication:Google:ClientId"];
+                googleOptions.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
+            }).AddQQ(qqOptions =>
+            {
+                qqOptions.AppId = Configuration["Authentication:QQ:AppId"];
+                qqOptions.AppKey = Configuration["Authentication:QQ:AppKey"];
             });
 
             services.AddMvc();

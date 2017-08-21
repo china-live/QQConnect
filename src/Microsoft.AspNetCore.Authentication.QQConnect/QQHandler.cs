@@ -10,11 +10,11 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Authentication.QQConnect
+namespace Microsoft.AspNetCore.Authentication.QQ
 {
-    internal class QQHandler : OAuthHandler<QQConnectOptions>
+    internal class QQHandler : OAuthHandler<QQOptions>
     {
-        public QQHandler(IOptionsMonitor<QQConnectOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        public QQHandler(IOptionsMonitor<QQOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
