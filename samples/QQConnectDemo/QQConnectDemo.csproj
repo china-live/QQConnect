@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.0" PrivateAssets="All" />
+    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.QQConnect\Microsoft.AspNetCore.Authentication.QQ.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.WeChat\Microsoft.AspNetCore.Authentication.WeChat.csproj" />
   </ItemGroup>
 
 </Project>
