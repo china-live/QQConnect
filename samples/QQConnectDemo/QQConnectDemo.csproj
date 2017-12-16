@@ -30,5 +30,4 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.QQConnect\Microsoft.AspNetCore.Authentication.QQ.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.WeChat\Microsoft.AspNetCore.Authentication.WeChat.csproj" />
   </ItemGroup>
-
 </Project>

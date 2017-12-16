@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -43,7 +44,11 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
                 { "scope", scope },
                 { "state", state },
             };
-            return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters);
+
+            //判断当前请求是否由微信内置浏览器发出
+            var isMicroMessenger = Request.Headers[HeaderNames.UserAgent].ToString().ToLower().Contains("micromessenger");
+
+            return QueryHelpers.AddQueryString(isMicroMessenger ? Options.AuthorizationEndpoint2 : Options.AuthorizationEndpoint, parameters);
         }
 
         /// <summary>

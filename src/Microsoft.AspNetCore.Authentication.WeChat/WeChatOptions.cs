@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
         {
             CallbackPath = new PathString("/signin-wechat");
             AuthorizationEndpoint = WeChatDefaults.AuthorizationEndpoint;
+            AuthorizationEndpoint2 = WeChatDefaults.AuthorizationEndpoint2;
             TokenEndpoint = WeChatDefaults.TokenEndpoint;
             UserInformationEndpoint = WeChatDefaults.UserInformationEndpoint;
  
@@ -45,5 +46,12 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             get { return ClientSecret; }
             set { ClientSecret = value; }
         }
+
+        /// <summary>
+        /// 网站微信登录有两种场景，一种是在微信客户端内打开登录，一种是在微信客户端外登录。
+        /// 在微信内登录直接转到让用户授权页面，在微信外则为显示二微码让用户扫描后在微信内授权。
+        /// AuthorizationEndpoint是在微信外登录地址，AuthorizationEndpoint2是微信内登录地址
+        /// </summary>
+        public string AuthorizationEndpoint2 { get; set; }
     }
 }
