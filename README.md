@@ -17,7 +17,8 @@ asp.net core2.0 QQ登录、微信登录
 ## 使用方法
 
 ### QQ
-1.在NuGet中搜索Microsoft.AspNetCore.Authentication.QQ或AspNetCore.Authentication.QQ安装。也可以把本项目源码Microsoft.AspNetCore.Authentication.QQ目录拷贝到你的工程目录内，再在解决方案中附加该项目即可。
+1.在NuGet中搜索Microsoft.AspNetCore.Authentication.QQ或AspNetCore.Authentication.QQ安装。也可以把本项目源码Microsoft.AspNetCore.Authentication.QQ目录拷贝到你的工程目录内，再在解决方案中附加该项目即可。  
+
 2.打开appsettings.json文件，添加如下代码
 ~~~
 {
