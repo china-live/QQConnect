@@ -7,19 +7,45 @@ using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Microsoft.AspNetCore.Authentication.WeChat
 {
     internal class WeChatHandler : OAuthHandler<WeChatOptions>
     {
-        public WeChatHandler(IOptionsMonitor<WeChatOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+
+        private readonly ISecureDataFormat<AuthenticationProperties> _secureDataFormat;
+
+        /// <summary>
+        /// Called after options/events have been initialized for the handler to finish initializing itself.
+        /// </summary>
+        /// <returns>A task</returns>
+        protected override async Task InitializeHandlerAsync()
+        {
+            await base.InitializeHandlerAsync();
+            if (Options.UseCachedStateDataFormat)
+            {
+                Options.StateDataFormat = _secureDataFormat;
+            }       
+        }
+
+        public WeChatHandler(
+             IOptionsMonitor<WeChatOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder,
+            ISystemClock clock,
+            ISecureDataFormat<AuthenticationProperties> secureDataFormat)
             : base(options, logger, encoder, clock)
-        { }
+        {
+            _secureDataFormat = secureDataFormat;
+        }
         /*
          * Challenge 盘问握手认证协议
          * 这个词有点偏，好多翻译工具都查不出。
@@ -36,19 +62,25 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             var scope = FormatScope();
 
             var state = Options.StateDataFormat.Protect(properties);
-            var parameters = new Dictionary<string, string>
+
+            var parameters = new Dictionary<string, string>()
             {
                 { "appid", Options.ClientId },
                 { "redirect_uri", redirectUri },
                 { "response_type", "code" },
-                { "scope", scope },
-                { "state", state },
+                //{ "scope", scope },
+                //{ "state", state },
             };
 
             //判断当前请求是否由微信内置浏览器发出
-            var isMicroMessenger = Request.Headers[HeaderNames.UserAgent].ToString().ToLower().Contains("micromessenger");
+            var isMicroMessenger = Options.IsWeChatBrowser(Request);
+            var ret= QueryHelpers.AddQueryString(
+                isMicroMessenger ? Options.AuthorizationEndpoint2 
+                    : Options.AuthorizationEndpoint, parameters);
+            //scope 不能被UrlEncode
+            ret += $"&scope={scope}&state={state}";
 
-            return QueryHelpers.AddQueryString(isMicroMessenger ? Options.AuthorizationEndpoint2 : Options.AuthorizationEndpoint, parameters);
+            return ret;
         }
 
         /// <summary>
@@ -222,5 +254,25 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
         {
             return json.Value<string>("unionid");
         }
+
+        /// <summary>
+        /// 根据是否为微信浏览器返回不同Scope
+        /// </summary>
+        /// <returns></returns>
+        protected override string FormatScope()
+        {
+            if (Options.IsWeChatBrowser(Request))
+            {
+                return string.Join(",", Options.Scope2);
+            }
+            else
+            {
+                return string.Join(",", Options.Scope);
+            }
+            
+        }
+
+
+
     }
 }
