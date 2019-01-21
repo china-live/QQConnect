@@ -1,12 +1,19 @@
-﻿using Microsoft.AspNetCore.Authentication.OAuth;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.WeChat
 {
     public class WeChatOptions : OAuthOptions
     {
+
+        public static string UserInfoScope = "snsapi_userinfo";
+        public static string LoginScope = "snsapi_login";
+
         public WeChatOptions()
         {
             CallbackPath = new PathString("/signin-wechat");
@@ -14,9 +21,15 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             AuthorizationEndpoint2 = WeChatDefaults.AuthorizationEndpoint2;
             TokenEndpoint = WeChatDefaults.TokenEndpoint;
             UserInformationEndpoint = WeChatDefaults.UserInformationEndpoint;
- 
+
             //Scope 表示应用授权作用域。
-            Scope.Add("snsapi_login"); //网页应用目前仅填写snsapi_login即可
+            //网页上登录（非微信浏览器）需要两个Scope，一个是UserInfo，一个是Login
+            Scope.Add(UserInfoScope);
+            Scope.Add(LoginScope);
+
+            //微信内嵌浏览器Login只需要UserInfo
+            Scope2 = new List<string>();
+            Scope2.Add(UserInfoScope);
 
             //除了openid外，其余的都可能为空，因为微信获取用户信息是有单独权限的
             ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "openid");
@@ -28,8 +41,11 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             ClaimActions.MapJsonKey(ClaimTypes.Uri, "headimgurl");
             ClaimActions.MapCustomJson("urn:wechat:privilege", user =>  string.Join(",",user.SelectToken("privilege")?.Select(s => (string)s).ToArray() ?? new string[0]));
             ClaimActions.MapJsonKey("urn:wechat:unionid", "unionid");
+
+            IsWeChatBrowser=(r) => r.Headers[HeaderNames.UserAgent].ToString().ToLower().Contains("micromessenger");
         }
- 
+
+
         /// <summary>
         /// 应用唯一标识，在微信开放平台提交应用审核通过后获得
         /// </summary>
@@ -53,5 +69,18 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
         /// AuthorizationEndpoint是在微信外登录地址，AuthorizationEndpoint2是微信内登录地址
         /// </summary>
         public string AuthorizationEndpoint2 { get; set; }
+
+        /// <summary>
+        /// 微信内登录地址 的Scope
+        /// </summary>
+        public ICollection<string> Scope2 { get; set; }
+
+        /// <summary>
+        /// 是否是微信内置浏览器
+        /// </summary>
+        public Func<HttpRequest, bool> IsWeChatBrowser { get; set; }
+
+        public bool UseCachedStateDataFormat { get; set; } = false;
+
     }
 }

@@ -1,4 +1,4 @@
-# QQConnect
+﻿# QQConnect
 asp.net core2.0 QQ登录、微信登录
 
 基于Microsoft.AspNetCore.Authentication.OAuth实现([aspnet/Security2.0](https://github.com/aspnet/Security/tree/rel/2.0.0))
@@ -72,4 +72,19 @@ services.AddAuthentication().AddQQ(qqOptions =>
     wechatOptions.AppId = Configuration["Authentication:WeChat:AppId"];
     wechatOptions.AppSecret = Configuration["Authentication:WeChat:AppSecret"];
 }) ;
+~~~
+
+
+#微信State Too Long 报错
+由于微信的设置，state最多128字节，但是默认生成的state会超出限制，所以需要加入缓存
+~~~
+ services.AddAuthentication()
+                .AddWeChat(wechatOptions => {
+                    wechatOptions.AppId = configuration["Authentication:WeChat:AppId"];
+                    wechatOptions.AppSecret = configuration["Authentication:WeChat:AppSecret"];
+                    wechatOptions.UseCachedStateDataFormat = true;
+                })
+
+//注意如果你有多个后端服务器，需要使用真实的分布式缓存
+ services.AddDistributedMemoryCache();
 ~~~
