@@ -7,13 +7,14 @@
     <PackageTags>WeChat,weixin,security, aspnet core, authentication</PackageTags>
     <PackageProjectUrl>https://github.com/china-live/QQConnect/tree/master</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/china-live/QQConnect/blob/master/LICENSE</PackageLicenseUrl>
-    <Description>适用于ASP.NET Core2.0 的 OAuth2 认证中间件，使Web应用程序支持用微信快捷登录。</Description>
-    <Version>2.0.0</Version>
+    <Description>适用于ASP.NET Core2.0+ 的 OAuth2 认证中间件，使Web应用程序支持用微信快捷登录。</Description>
+    <Version>2.0.1</Version>
     <Authors>LDMING</Authors>
     <Company>LDMING</Company>
-    <Product>AspNetCore.Authentication.WeChat</Product>
+    <Product>AspNetCore.Authentication.Weixin</Product>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageId>AspNetCore.Authentication.Weixin</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
