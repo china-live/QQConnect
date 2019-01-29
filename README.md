@@ -39,6 +39,7 @@ services.AddAuthentication().AddQQ(qqOptions =>
     qqOptions.AppKey = Configuration["Authentication:QQ:AppKey"];
 });
 ~~~
+4.默认回调地址为 http://DomainName/signin-qq 和 https://DomainName/signin-wechat(微信必须要求https)
 
 ### 微信
 方法同上，将QQ替换成WeChat就可以了，注意微信NuGet上包名为AspNetCore.Authentication.Weixin和AspNetCore.Authentication.WeChat

@@ -70,7 +70,7 @@ namespace Demo
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseBrowserLink();
+                //app.UseBrowserLink();
                 app.UseDatabaseErrorPage();
             }
             else
@@ -78,7 +78,7 @@ namespace Demo
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            loggerFactory.AddConsole();
+            //loggerFactory.AddConsole();
 
             app.UseStaticFiles();
 
