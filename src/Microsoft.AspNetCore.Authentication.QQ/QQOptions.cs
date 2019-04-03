@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Authentication.QQ
 
             ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "openid");
             ClaimActions.MapJsonKey(ClaimTypes.Name, "nickname");
+            ClaimActions.MapJsonKey(ClaimTypes.Gender, "gender");
+            ClaimActions.MapJsonKey("sub", "openid");
             ClaimActions.MapJsonKey("urn:qq:figure", "figureurl_qq_1");
         }
 
