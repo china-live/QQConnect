@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             }
 
             //第二步，通过Code获取Access Token
-            var tokens = await ExchangeCodeAsync(code, BuildRedirectUri(Options.CallbackPath));
+            var redirectUrl = Options.CallbackPath.HasValue && Options.CallbackPath.Value.Contains("http") ?                Options.CallbackPath.Value :                BuildRedirectUri(Options.CallbackPath);            var tokens = await ExchangeCodeAsync(code, redirectUrl);
 
             if (tokens.Error != null)
             {
