@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
 {
     public class WeChatOptions : OAuthOptions
     {
-
         public static string UserInfoScope = "snsapi_userinfo";
         public static string LoginScope = "snsapi_login";
 
@@ -62,6 +61,11 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             get { return ClientSecret; }
             set { ClientSecret = value; }
         }
+
+        /// <summary>
+        /// 回调URL
+        /// </summary>
+        public string CallbackUrl { get; set; }
 
         /// <summary>
         /// 网站微信登录有两种场景，一种是在微信客户端内打开登录，一种是在微信客户端外登录。
