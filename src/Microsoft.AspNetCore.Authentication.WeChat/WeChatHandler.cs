@@ -63,6 +63,9 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
 
             var state = Options.StateDataFormat.Protect(properties);
 
+            if (!string.IsNullOrEmpty(Options.CallbackUrl))
+                redirectUri = Options.CallbackUrl;
+
             var parameters = new Dictionary<string, string>()
             {
                 { "appid", Options.ClientId },
@@ -116,7 +119,10 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             }
 
             //第二步，通过Code获取Access Token
-            var redirectUrl = !string.IsNullOrEmpty(Options.CallbackUrl) ?                Options.CallbackUrl :                BuildRedirectUri(Options.CallbackPath);            var tokens = await ExchangeCodeAsync(code, redirectUrl);
+            var redirectUrl = !string.IsNullOrEmpty(Options.CallbackUrl) ?
+                Options.CallbackUrl :
+                BuildRedirectUri(Options.CallbackPath);
+            var tokens = await ExchangeCodeAsync(code, redirectUrl);
 
             if (tokens.Error != null)
             {
