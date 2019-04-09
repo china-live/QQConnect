@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authentication.QQ
@@ -96,16 +97,16 @@ namespace Microsoft.AspNetCore.Authentication.QQ
             */
 
             //通过Access Token，成功取得对应用户身份OpenID时的数据返回格式
-            //详情请访问QQ互联api文档 http://wiki.connect.qq.com/%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7openid_oauth2-0
-            var openIdRegex = new System.Text.RegularExpressions.Regex("callback\\((?<json>[ -~]+)\\);");
+            //详情请访问QQ互联api文档 htt p://wiki.connect.qq.com/%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7openid_oauth2-0
+            var openIdRegex = new Regex("callback\\((?<json>[ -~]+)\\);");
             if (openIdRegex.IsMatch(text))
             {
                 return openIdRegex.Match(text).Groups["json"].Value;
             }
 
             //获取Access Token成功后的返回数据格式,详情请参见QQ互联api文档“Step2：通过Authorization Code获取Access Token ”章节
-            //http://wiki.connect.qq.com/%E4%BD%BF%E7%94%A8authorization_code%E8%8E%B7%E5%8F%96access_token
-            var tokenRegex = new System.Text.RegularExpressions.Regex("^access_token=.{1,}&expires_in=.{1,}&refresh_token=.{1,}");
+            //htt p://wiki.connect.qq.com/%E4%BD%BF%E7%94%A8authorization_code%E8%8E%B7%E5%8F%96access_token
+            var tokenRegex = new Regex("^access_token=.{1,}&expires_in=.{1,}&refresh_token=.{1,}");
             if (tokenRegex.IsMatch(text))
             {
                 return "{\"" + text.Replace("=", "\":\"").Replace("&", "\",\"") + "\"}";
