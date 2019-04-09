@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             if (Options.UseCachedStateDataFormat)
             {
                 Options.StateDataFormat = _secureDataFormat;
-            }       
+            }
         }
 
         public WeChatHandler(
@@ -64,8 +64,10 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             var state = Options.StateDataFormat.Protect(properties);
 
             if (!string.IsNullOrEmpty(Options.CallbackUrl))
+            {
                 redirectUri = Options.CallbackUrl;
-
+            }
+ 
             var parameters = new Dictionary<string, string>()
             {
                 { "appid", Options.ClientId },
@@ -77,8 +79,8 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
 
             //判断当前请求是否由微信内置浏览器发出
             var isMicroMessenger = Options.IsWeChatBrowser(Request);
-            var ret= QueryHelpers.AddQueryString(
-                isMicroMessenger ? Options.AuthorizationEndpoint2 
+            var ret = QueryHelpers.AddQueryString(
+                isMicroMessenger ? Options.AuthorizationEndpoint2
                     : Options.AuthorizationEndpoint, parameters);
             //scope 不能被UrlEncode
             ret += $"&scope={scope}&state={state}";
@@ -275,10 +277,6 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             {
                 return string.Join(",", Options.Scope);
             }
-            
         }
-
-
-
     }
 }
