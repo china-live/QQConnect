@@ -15,6 +15,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using System.Web;
+using AspNetCore.Authentication.WeChat;
 
 namespace Microsoft.AspNetCore.Authentication.WeChat
 {
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
     {
 
         private readonly ISecureDataFormat<AuthenticationProperties> _secureDataFormat;
+
 
         /// <summary>
         /// Called after options/events have been initialized for the handler to finish initializing itself.
@@ -33,6 +35,35 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             if (Options.UseCachedStateDataFormat)
             {
                 Options.StateDataFormat = _secureDataFormat;
+            }
+            //set Scopes and AuthorizationEndpoint
+            //Scope 表示应用授权作用域。
+            //网页上登录（非微信浏览器）需要两个Scope，一个是UserInfo，一个是Login
+            foreach (var app in Options.Apps)
+            {
+                if (app.AppType == WeChatApplicationType.OfficialAccount)
+                {
+                    if (app.AuthorizationEndpoint == null)
+                    {
+                        app.AuthorizationEndpoint = WeChatDefaults.AuthorizationEndpoint2;
+                    }
+
+                    if (app.Scopes == null || !app.Scopes.Any())
+                    {
+                        app.Scopes = new List<string>() { WeChatDefaults.UserInfoScope };
+                    }
+                }
+                if (app.AppType == WeChatApplicationType.WebSite)
+                {
+                    if (app.AuthorizationEndpoint == null)
+                    {
+                        app.AuthorizationEndpoint = WeChatDefaults.AuthorizationEndpoint;
+                    }
+                    if (app.Scopes == null || !app.Scopes.Any())
+                    {
+                        app.Scopes = new List<string>() { WeChatDefaults.UserInfoScope, WeChatDefaults.LoginScope };
+                    }
+                }
             }
         }
 
@@ -59,8 +90,18 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
         /// <returns></returns>
         protected override string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
-            var scope = FormatScope();
-
+            //get current current application
+            WeChatApplication currentApplication= Options.Apps.First();
+            if (Options.IsWeChatBrowser(Request))
+            {
+                currentApplication = Options.Apps.FirstOrDefault(p => p.AppType == WeChatApplicationType.OfficialAccount) ?? currentApplication;
+            }
+            else
+            {
+                currentApplication = Options.Apps.FirstOrDefault(p => p.AppType == WeChatApplicationType.WebSite) ?? currentApplication;
+            }
+            var scope = FormatScope(currentApplication.AppId);
+            properties.Items["appid"] = currentApplication.AppId;
             var state = Options.StateDataFormat.Protect(properties);
 
             if (!string.IsNullOrEmpty(Options.CallbackUrl))
@@ -70,18 +111,15 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
  
             var parameters = new Dictionary<string, string>()
             {
-                { "appid", Options.ClientId },
+                { "appid", currentApplication.AppId },
                 { "redirect_uri", redirectUri },
                 { "response_type", "code" },
                 //{ "scope", scope },
                 //{ "state", state },
             };
 
-            //判断当前请求是否由微信内置浏览器发出
-            var isMicroMessenger = Options.IsWeChatBrowser(Request);
             var ret = QueryHelpers.AddQueryString(
-                isMicroMessenger ? Options.AuthorizationEndpoint2
-                    : Options.AuthorizationEndpoint, parameters);
+                currentApplication.AuthorizationEndpoint, parameters);
             //scope 不能被UrlEncode
             ret += $"&scope={scope}&state={state}";
 
@@ -124,7 +162,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             var redirectUrl = !string.IsNullOrEmpty(Options.CallbackUrl) ?
                 Options.CallbackUrl :
                 BuildRedirectUri(Options.CallbackPath);
-            var tokens = await ExchangeCodeAsync(code, redirectUrl);
+            var tokens = await ExchangeCodeAsync(code, redirectUrl,properties.Items["appid"]);
 
             if (tokens.Error != null)
             {
@@ -186,12 +224,12 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
         /// <summary>
         /// 通过Code获取Access Token(这是第二步) 
         /// </summary>
-        protected override async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, string redirectUri)
+        protected  async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, string redirectUri,string appId)
         {
             var parameters = new Dictionary<string, string>
             {
-                {  "appid", Options.ClientId },
-                {  "secret", Options.ClientSecret },
+                {  "appid", appId },
+                {  "secret",Options.Apps.First(p=>p.AppId==appId).AppSecret },
                 {  "code", code},
                 {  "grant_type", "authorization_code" }
             };
@@ -209,6 +247,8 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
                 return OAuthTokenResponse.Failed(new Exception("获取微信AccessToken出错。"));
             }
         }
+
+
 
         /// <summary>
         /// 创建身份票据(这是第三步) 
@@ -264,19 +304,12 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
         }
 
         /// <summary>
-        /// 根据是否为微信浏览器返回不同Scope
+        /// 构建Scope
         /// </summary>
         /// <returns></returns>
-        protected override string FormatScope()
+        protected  string FormatScope(string appId)
         {
-            if (Options.IsWeChatBrowser(Request))
-            {
-                return string.Join(",", Options.Scope2);
-            }
-            else
-            {
-                return string.Join(",", Options.Scope);
-            }
+            return string.Join(",",Options.Apps.First(p=>p.AppId==appId).Scopes);
         }
     }
 }

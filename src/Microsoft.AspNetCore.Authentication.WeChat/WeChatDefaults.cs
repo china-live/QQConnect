@@ -25,5 +25,8 @@
         /// 第三步，使用access_token获取用户个人信息地址
         /// </summary>
         public static readonly string UserInformationEndpoint = "https://api.weixin.qq.com/sns/userinfo";
+
+        public static readonly string UserInfoScope = "snsapi_userinfo";
+        public static readonly string LoginScope = "snsapi_login";
     }
 }
