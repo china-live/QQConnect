@@ -3,9 +3,11 @@ using System;
 using AspNetCore.Authentication.WeChat;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.WeChat
 {
@@ -43,7 +45,10 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
                 displayName, configureOptions);
         }
 
-
+        public static bool IsWeChatBroswer(this HttpRequest r)
+        {
+            return r.Headers[HeaderNames.UserAgent].ToString().ToLower().Contains("micromessenger");
+        }
 
     }
 }

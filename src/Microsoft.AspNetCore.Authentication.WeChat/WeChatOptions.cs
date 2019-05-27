@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             ClaimActions.MapCustomJson("urn:wechat:privilege", user =>  string.Join(",",user.SelectToken("privilege")?.Select(s => (string)s).ToArray() ?? new string[0]));
             ClaimActions.MapJsonKey("urn:wechat:unionid", "unionid");
 
-            IsWeChatBrowser=(r) => r.Headers[HeaderNames.UserAgent].ToString().ToLower().Contains("micromessenger");
+            IsWeChatBrowser=(r) => r.IsWeChatBroswer();
         }
 
 
