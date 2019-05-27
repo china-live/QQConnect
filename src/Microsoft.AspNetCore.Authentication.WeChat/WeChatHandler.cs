@@ -23,8 +23,9 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
     {
 
         private readonly ISecureDataFormat<AuthenticationProperties> _secureDataFormat;
-
-
+ 
+        private readonly ILogger _logger;
+ 
         /// <summary>
         /// Called after options/events have been initialized for the handler to finish initializing itself.
         /// </summary>
@@ -76,6 +77,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             : base(options, logger, encoder, clock)
         {
             _secureDataFormat = secureDataFormat;
+            _logger = logger.CreateLogger(nameof(WeChatHandler));
         }
         /*
          * Challenge 盘问握手认证协议
@@ -117,12 +119,15 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
                 //{ "scope", scope },
                 //{ "state", state },
             };
-
+ 
+            //判断当前请求是否由微信内置浏览器发出
+            var isMicroMessenger = Options.IsWeChatBrowser(Request);
+ 
             var ret = QueryHelpers.AddQueryString(
                 currentApplication.AuthorizationEndpoint, parameters);
             //scope 不能被UrlEncode
             ret += $"&scope={scope}&state={state}";
-
+            _logger.LogDebug("请求CODE "+ret);
             return ret;
         }
 
@@ -140,7 +145,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             //若用户禁止授权，则重定向后不会带上code参数，仅会带上state参数
             var code = query["code"];
             var state = query["state"];
-
+            _logger.LogDebug($"接收微信授权的回调 code:{code} state:{state}");
             properties = Options.StateDataFormat.Unprotect(state);
             if (properties == null)
             {
@@ -233,13 +238,19 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
                 {  "code", code},
                 {  "grant_type", "authorization_code" }
             };
-
+            _logger.LogDebug("code换取access_token");
             var endpoint = QueryHelpers.AddQueryString(Options.TokenEndpoint, parameters);
-
+            _logger.LogDebug(endpoint);
             var response = await Backchannel.GetAsync(endpoint, Context.RequestAborted);
             if (response.IsSuccessStatusCode)
             {
-                var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
+                var result = await response.Content.ReadAsStringAsync();
+                _logger.LogDebug(result);
+                var payload = JObject.Parse(result);
+                if(payload.Properties().Any(p => p.Name == "errcode"))
+                {
+                    return OAuthTokenResponse.Failed(new Exception($"获取微信AccessToken出错。{result}"));
+                }
                 return OAuthTokenResponse.Success(payload);
             }
             else
