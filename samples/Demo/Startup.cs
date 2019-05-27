@@ -57,8 +57,7 @@ namespace Demo
                 qqOptions.AppId = Configuration["Authentication:QQ:AppId"];
                 qqOptions.AppKey = Configuration["Authentication:QQ:AppKey"];
             }).AddWeChat(wechatOptions => {
-                wechatOptions.AppId = Configuration["Authentication:WeChat:AppId"];
-                wechatOptions.AppSecret = Configuration["Authentication:WeChat:AppSecret"];
+                Configuration.GetSection("Authentication:WeChat").Bind(wechatOptions);
             }) ;
 
             services.AddMvc();
