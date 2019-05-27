@@ -28,5 +28,7 @@
 
         public static readonly string UserInfoScope = "snsapi_userinfo";
         public static readonly string LoginScope = "snsapi_login";
+
+        public static readonly string AppIdKey = "appid";
     }
 }

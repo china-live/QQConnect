@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
                 currentApplication = Options.Apps.FirstOrDefault(p => p.AppType == WeChatApplicationType.WebSite) ?? currentApplication;
             }
             var scope = FormatScope(currentApplication.AppId);
-            properties.Items["appid"] = currentApplication.AppId;
+            properties.Items[WeChatDefaults.AppIdKey] = currentApplication.AppId;
             var state = Options.StateDataFormat.Protect(properties);
 
             if (!string.IsNullOrEmpty(Options.CallbackUrl))
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             var redirectUrl = !string.IsNullOrEmpty(Options.CallbackUrl) ?
                 Options.CallbackUrl :
                 BuildRedirectUri(Options.CallbackPath);
-            var tokens = await ExchangeCodeAsync(code, redirectUrl,properties.Items["appid"]);
+            var tokens = await ExchangeCodeAsync(code, redirectUrl,properties.Items[WeChatDefaults.AppIdKey]);
 
             if (tokens.Error != null)
             {
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
 
                 userInfo = JObject.Parse(await userInfoResponse.Content.ReadAsStringAsync());
             }
-
+            identity.AddClaim(new Claim(WeChatDefaults.AppIdKey, properties.Items[WeChatDefaults.AppIdKey]));
             var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, userInfo);
             context.RunClaimActions();
             await Events.CreatingTicket(context);

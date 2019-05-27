@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Demo.Models;
 using Demo.Models.AccountViewModels;
 using Demo.Services;
+using Microsoft.AspNetCore.Authentication.WeChat;
 
 namespace Demo.Controllers
 {
@@ -275,7 +276,9 @@ namespace Demo.Controllers
             {
                 return RedirectToAction(nameof(Login));
             }
-
+            //get appId here
+            var appId = info.Principal.FindFirstValue(WeChatDefaults.AppIdKey);
+            
             // Sign in the user with this external login provider if the user already has a login.
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
             if (result.Succeeded)
