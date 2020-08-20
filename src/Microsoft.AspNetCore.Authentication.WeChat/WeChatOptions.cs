@@ -19,16 +19,18 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             TokenEndpoint = WeChatDefaults.TokenEndpoint;
             UserInformationEndpoint = WeChatDefaults.UserInformationEndpoint;
 
+            //Scope.Add("snsapi_login");
 
             //除了openid外，其余的都可能为空，因为微信获取用户信息是有单独权限的
             ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "openid");
+
             ClaimActions.MapJsonKey(ClaimTypes.Name, "nickname");
             ClaimActions.MapJsonKey(ClaimTypes.Gender, "sex",ClaimValueTypes.Integer);
             ClaimActions.MapJsonKey(ClaimTypes.Country, "country");//ClaimTypes.Locality
             ClaimActions.MapJsonKey("urn:wechat:province", "province");//ClaimTypes.StateOrProvince
             ClaimActions.MapJsonKey("urn:wechat:city", "city");//ClaimTypes.StreetAddress
             ClaimActions.MapJsonKey(ClaimTypes.Uri, "headimgurl");
-            ClaimActions.MapCustomJson("urn:wechat:privilege", user =>  string.Join(",",user.SelectToken("privilege")?.Select(s => (string)s).ToArray() ?? new string[0]));
+            //ClaimActions.MapCustomJson("urn:wechat:privilege", user =>  string.Join(",",user.SelectToken("privilege")?.Select(s => (string)s).ToArray() ?? new string[0]));
             ClaimActions.MapJsonKey("urn:wechat:unionid", "unionid");
 
             IsWeChatBrowser=(r) => r.IsWeChatBroswer();

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -16,6 +15,8 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using System.Web;
 using AspNetCore.Authentication.WeChat;
+using System.Text;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.WeChat
 {
@@ -23,9 +24,9 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
     {
 
         private readonly ISecureDataFormat<AuthenticationProperties> _secureDataFormat;
- 
+
         private readonly ILogger _logger;
- 
+
         /// <summary>
         /// Called after options/events have been initialized for the handler to finish initializing itself.
         /// </summary>
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
         protected override string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
             //get current current application
-            WeChatApplication currentApplication= Options.Apps.First();
+            WeChatApplication currentApplication = Options.Apps.First();
             if (Options.IsWeChatBrowser(Request))
             {
                 currentApplication = Options.Apps.FirstOrDefault(p => p.AppType == WeChatApplicationType.OfficialAccount) ?? currentApplication;
@@ -110,7 +111,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             {
                 redirectUri = Options.CallbackUrl;
             }
- 
+
             var parameters = new Dictionary<string, string>()
             {
                 { "appid", currentApplication.AppId },
@@ -119,15 +120,15 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
                 //{ "scope", scope },
                 //{ "state", state },
             };
- 
+
             //判断当前请求是否由微信内置浏览器发出
             var isMicroMessenger = Options.IsWeChatBrowser(Request);
- 
+
             var ret = QueryHelpers.AddQueryString(
                 currentApplication.AuthorizationEndpoint, parameters);
             //scope 不能被UrlEncode
             ret += $"&scope={scope}&state={state}";
-            _logger.LogDebug("请求CODE "+ret);
+            _logger.LogDebug("请求CODE " + ret);
             return ret;
         }
 
@@ -167,7 +168,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             var redirectUrl = !string.IsNullOrEmpty(Options.CallbackUrl) ?
                 Options.CallbackUrl :
                 BuildRedirectUri(Options.CallbackPath);
-            var tokens = await ExchangeCodeAsync(code, redirectUrl,properties.Items[WeChatDefaults.AppIdKey]);
+            var tokens = await ExchangeCodeAsync(code, redirectUrl, properties.Items[WeChatDefaults.AppIdKey]);
 
             if (tokens.Error != null)
             {
@@ -229,7 +230,7 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
         /// <summary>
         /// 通过Code获取Access Token(这是第二步) 
         /// </summary>
-        protected  async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, string redirectUri,string appId)
+        protected async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, string redirectUri, string appId)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -246,17 +247,14 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             {
                 var result = await response.Content.ReadAsStringAsync();
                 _logger.LogDebug(result);
-                var payload = JObject.Parse(result);
-                if(payload.Properties().Any(p => p.Name == "errcode"))
-                {
-                    return OAuthTokenResponse.Failed(new Exception($"获取微信AccessToken出错。{result}"));
-                }
-                return OAuthTokenResponse.Success(payload);
+
+                var payload = JsonDocument.Parse(result);
+                if (string.IsNullOrEmpty(payload.RootElement.GetString("errcode")))
+                    return OAuthTokenResponse.Success(payload);
             }
-            else
-            {
-                return OAuthTokenResponse.Failed(new Exception("获取微信AccessToken出错。"));
-            }
+
+            Logger.LogDebug($"获取微信access_token时出错：\n{await Display(response)}");
+            return OAuthTokenResponse.Failed(new Exception("获取微信AccessToken出错。"));
         }
 
 
@@ -273,54 +271,109 @@ namespace Microsoft.AspNetCore.Authentication.WeChat
             AuthenticationProperties properties,
             OAuthTokenResponse tokens)
         {
-            var openId = GetOpenId(tokens.Response);
-            var unionId = GetUnionId(tokens.Response);
+            tokens.Response.RootElement.TryGetProperty("unionid", out var unionId);
+            tokens.Response.RootElement.TryGetProperty("openid", out var openId);
 
-            var userInfo = new JObject();
-            userInfo.Add("openid", openId);
+            //var openId = GetOpenId(tokens.Response);
+            //var unionId = GetUnionId(tokens.Response);
+
+            //var userInfo = new JObject();
+            //userInfo.Add("openid", openId);
 
             //微信获取用户信息是需要开通权限的，没有开通权限的只能用openId来标示用户
-            if (!string.IsNullOrEmpty(unionId))
-            {
-                //获取用户信息
-                var parameters = new Dictionary<string, string>
-                {
-                    {  "openid", openId},
-                    {  "access_token", tokens.AccessToken },
-                    {  "lang", "zh-CN" } //如果是多语言，这个参数该怎么获取？
-                };
-                var userInfoEndpoint = QueryHelpers.AddQueryString(Options.UserInformationEndpoint, parameters);
-                var userInfoResponse = await Backchannel.GetAsync(userInfoEndpoint, Context.RequestAborted);
-                if (!userInfoResponse.IsSuccessStatusCode)
-                {
-                    throw new HttpRequestException($"未能获取到微信用户个人信息(返回状态码:{userInfoResponse.StatusCode})，请检查access_token是正确。");
-                }
+            //if (!string.IsNullOrEmpty(unionId.GetString()))
+            //{
+            //    //获取用户信息
+            //    var parameters = new Dictionary<string, string>
+            //    {
+            //        {  "openid", openId.ToString()},
+            //        {  "access_token", tokens.AccessToken },
+            //        {  "lang", "zh-CN" } //如果是多语言，这个参数该怎么获取？
+            //    };
+            //    var userInfoEndpoint = QueryHelpers.AddQueryString(Options.UserInformationEndpoint, parameters);
+            //    var userInfoResponse = await Backchannel.GetAsync(userInfoEndpoint, Context.RequestAborted);
+            //    if (!userInfoResponse.IsSuccessStatusCode)
+            //    {
+            //        throw new HttpRequestException($"未能获取到微信用户个人信息(返回状态码:{userInfoResponse.StatusCode})，请检查access_token是正确。");
+            //    }
 
-                userInfo = JObject.Parse(await userInfoResponse.Content.ReadAsStringAsync());
-            }
-            identity.AddClaim(new Claim(WeChatDefaults.AppIdKey, properties.Items[WeChatDefaults.AppIdKey]));
-            var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, userInfo);
+            //    //userInfo = JObject.Parse(await userInfoResponse.Content.ReadAsStringAsync());
+            //}
+
+            var userInfoJson = await GetUserInfoAsync(tokens, openId.ToString() ?? "");
+
+            using var payload = JsonDocument.Parse(userInfoJson);
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, openId.ToString(), Options.ClaimsIssuer)); // 必须
+
+            //if (payload.RootElement.TryGetProperty("unionid", out var unionId))
+            //{
+            //    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, unionidEle.GetString(), Options.ClaimsIssuer));
+            //}
+            //else
+            //{
+            //    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, payload.RootElement.GetString("openid"), Options.ClaimsIssuer));
+            //}
+ 
+            var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload.RootElement);
             context.RunClaimActions();
             await Events.CreatingTicket(context);
             return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
+
+            //var userInfo = await GetUserInfoAsync(tokens,openId.ToString()??"");
+            //var  JsonDocument.Parse(userInfo)
+            //identity.AddClaim(new Claim(WeChatDefaults.AppIdKey, properties.Items[WeChatDefaults.AppIdKey]));
+            //var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, userInfo.RootElement);
+            //context.RunClaimActions();
+            //await Events.CreatingTicket(context);
+            //return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
         }
 
-        private static string GetOpenId(JObject json)
+        //获取用户信息
+        protected async Task<string> GetUserInfoAsync(OAuthTokenResponse tokens, string openId)
         {
-            return json.Value<string>("openid");
+            //获取用户信息
+            var parameters = new Dictionary<string, string>
+                {
+                    {  "openid", openId.ToString()},
+                    {  "access_token", tokens.AccessToken },
+                    {  "lang", "zh-CN" } //如果是多语言，这个参数该怎么获取？
+                };
+            var userInfoEndpoint = QueryHelpers.AddQueryString(Options.UserInformationEndpoint, parameters);
+            var userInfoResponse = await Backchannel.GetAsync(userInfoEndpoint, Context.RequestAborted);
+            if (!userInfoResponse.IsSuccessStatusCode)
+            {
+                Logger.LogDebug($"获取微信用户信息失败：\n{await Display(userInfoResponse)}");
+                throw new HttpRequestException($"未能获取到微信用户个人信息(返回状态码:{userInfoResponse.StatusCode})，请检查access_token是正确。");
+            }
+
+            return await userInfoResponse.Content.ReadAsStringAsync();
         }
-        private static string GetUnionId(JObject json)
+
+        private static async Task<string> Display(HttpResponseMessage response)
         {
-            return json.Value<string>("unionid");
+            var output = new StringBuilder();
+            output.Append("Status: " + response.StatusCode + ";");
+            output.Append("Headers: " + response.Headers.ToString() + ";");
+            output.Append("Body: " + await response.Content.ReadAsStringAsync() + ";");
+            return output.ToString();
         }
+
+        //private static string GetOpenId(JObject json)
+        //{
+        //    return json.Value<string>("openid");
+        //}
+        //private static string GetUnionId(JObject json)
+        //{
+        //    return json.Value<string>("unionid");
+        //}
 
         /// <summary>
         /// 构建Scope
         /// </summary>
         /// <returns></returns>
-        protected  string FormatScope(string appId)
+        protected string FormatScope(string appId)
         {
-            return string.Join(",",Options.Apps.First(p=>p.AppId==appId).Scopes);
+            return string.Join(",", Options.Apps.First(p => p.AppId == appId).Scopes);
         }
     }
 }

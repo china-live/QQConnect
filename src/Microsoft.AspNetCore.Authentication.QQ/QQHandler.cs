@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
@@ -29,12 +31,18 @@ namespace Microsoft.AspNetCore.Authentication.QQ
         {
             var openId = await GetOpenIdAsync(tokens);
             var userInfo = await GetUserInfoAsync(tokens, openId);
+
+            _logger.LogDebug("qq userinfo:" + userInfo);
+
             using var payload = JsonDocument.Parse(userInfo);
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, openId, Options.ClaimsIssuer)); // 必须
+            identity.AddClaim(new Claim("urn:qq:openid", openId, Options.ClaimsIssuer));  //
             var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload.RootElement);
             context.RunClaimActions();
             await Events.CreatingTicket(context);
             return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
         }
+
 
         /// <summary>
         /// 通过Authorization Code获取Access Token。
